@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - Gerenciamento de Chamados</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+
+<div class="login-tela">
+    <div class="login-caixa">
+
+        <div class="login-logo">
+            <span class="logo-mark">DX</span>
+        </div>
+        <h1>Gerenciamento de Chamados</h1>
+        <p class="login-sub">Entre com seu e-mail e senha</p>
+
+        <div th:if="${param.erro}" class="alerta alerta-erro">
+            E-mail ou senha inválidos.
+        </div>
+        <div th:if="${param.saiu}" class="alerta alerta-sucesso">
+            Você saiu do sistema.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" required autofocus
+                       autocomplete="username" placeholder="seu.email@empresa.com.br">
+            </div>
+
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required
+                       autocomplete="current-password" placeholder="••••••••">
+            </div>
+
+            <div class="campo-checkbox" style="margin-bottom: 16px;">
+                <input type="checkbox" id="remember-me" name="remember-me">
+                <label for="remember-me">Manter conectado neste computador</label>
+            </div>
+
+            <button type="submit" class="btn btn-primario">Entrar</button>
+        </form>
+
+        <p class="login-rodape">Digitrix IT &middot; Suporte técnico</p>
+    </div>
+</div>
+
+</body>
+</html>

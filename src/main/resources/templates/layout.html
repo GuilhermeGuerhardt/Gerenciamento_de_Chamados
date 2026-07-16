@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--/*
+  Layout base de todas as telas.
+  Cada pagina chama:  th:replace="~{layout :: base(~{::title}, ~{::main}, 'chamados')}"
+  onde o terceiro parametro marca qual item do menu fica destacado.
+*/-->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="base(titulo, conteudo, ativo)"
+      lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${titulo}">Chamados</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="logo-mark">DX</span>
+            <span class="logo-texto">Chamados</span>
+        </div>
+
+        <nav class="menu">
+            <a th:href="@{/}" class="menu-item" th:classappend="${ativo == 'painel'} ? 'ativo'">
+                <span class="menu-icone">▧</span> Painel
+            </a>
+            <a th:href="@{/chamados}" class="menu-item" th:classappend="${ativo == 'chamados'} ? 'ativo'">
+                <span class="menu-icone">✉</span> Chamados
+            </a>
+            <a th:href="@{/clientes}" class="menu-item"
+               sec:authorize="hasAnyRole('ADMIN','TECNICO')"
+               th:classappend="${ativo == 'clientes'} ? 'ativo'">
+                <span class="menu-icone">▤</span> Clientes
+            </a>
+            <a th:href="@{/usuarios}" class="menu-item"
+               sec:authorize="hasRole('ADMIN')"
+               th:classappend="${ativo == 'usuarios'} ? 'ativo'">
+                <span class="menu-icone">☺</span> Usuários e técnicos
+            </a>
+        </nav>
+
+        <div class="sidebar-rodape">
+            <a th:href="@{/meu-perfil}" class="usuario-box"
+               th:classappend="${ativo == 'perfil'} ? 'ativo'">
+                <span class="avatar"
+                      th:text="${#strings.substring(#authentication.principal.usuario.nome, 0, 1)}">A</span>
+                <span class="usuario-info">
+                    <strong sec:authentication="principal.usuario.nome">Usuário</strong>
+                    <small sec:authentication="principal.usuario.perfil.descricao">Perfil</small>
+                </span>
+            </a>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-sair">Sair</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="conteudo">
+        <div th:if="${sucesso}" class="alerta alerta-sucesso" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alerta alerta-erro" th:text="${erro}"></div>
+
+        <div th:replace="${conteudo}">Conteúdo</div>
+    </main>
+
+</div>
+
+</body>
+</html>

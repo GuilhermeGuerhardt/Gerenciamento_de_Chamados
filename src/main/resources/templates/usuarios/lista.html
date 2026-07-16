@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'usuarios')}"
+      lang="pt-BR">
+<head>
+    <title>Usuários e técnicos</title>
+</head>
+<body>
+<main>
+
+    <div class="pagina-topo">
+        <div>
+            <h1>Usuários e técnicos</h1>
+            <p class="subtitulo">Quem acessa o sistema e o que cada perfil pode fazer.</p>
+        </div>
+        <div class="acoes">
+            <a th:href="@{/usuarios/novo}" class="btn btn-primario">+ Novo usuário</a>
+        </div>
+    </div>
+
+    <div class="alerta alerta-info">
+        <strong>Administrador</strong> gerencia tudo, inclusive usuários e clientes.
+        <strong>Técnico</strong> atende chamados e cadastra clientes, mas não cria usuários.
+        <strong>Solicitante</strong> abre e acompanha somente os chamados da própria empresa.
+    </div>
+
+    <div class="tabela-wrap">
+        <table class="tabela">
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Empresa / especialidade</th>
+                <th>Último acesso</th>
+                <th>Situação</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td>
+                    <div class="celula-principal" th:text="${u.nome}">Nome</div>
+                    <div class="celula-secundaria" th:if="${u.telefone != null and !u.telefone.isEmpty()}"
+                         th:text="${u.telefone}">Telefone</div>
+                </td>
+                <td class="celula-secundaria" th:text="${u.email}">email</td>
+                <td>
+                    <span class="tag"
+                          th:classappend="${u.perfil.name() == 'ADMIN'} ? 'prio-urgente' :
+                                          (${u.perfil.name() == 'TECNICO'} ? 'prio-media' : 'tag-neutra')"
+                          th:text="${u.perfil.descricao}">Perfil</span>
+                </td>
+                <td class="celula-secundaria">
+                    <span th:if="${u.cliente != null}" th:text="${u.cliente.nomeExibicao}">Empresa</span>
+                    <span th:if="${u.cliente == null and u.especialidade != null and !u.especialidade.isEmpty()}"
+                          th:text="${u.especialidade}">Especialidade</span>
+                    <span th:if="${u.cliente == null and (u.especialidade == null or u.especialidade.isEmpty())}">—</span>
+                </td>
+                <td class="celula-secundaria nowrap">
+                    <span th:if="${u.ultimoAcesso != null}"
+                          th:text="${#temporals.format(u.ultimoAcesso, 'dd/MM/yyyy HH:mm')}">data</span>
+                    <span th:if="${u.ultimoAcesso == null}" class="texto-fraco">Nunca acessou</span>
+                </td>
+                <td>
+                    <span class="tag" th:classappend="${u.ativo} ? 'tag-ativo' : 'tag-inativo'"
+                          th:text="${u.ativo} ? 'Ativo' : 'Inativo'">Ativo</span>
+                </td>
+                <td class="texto-direita nowrap">
+                    <div class="linha-acoes">
+                        <a th:href="@{/usuarios/{id}/editar(id=${u.id})}" class="btn btn-pequeno">Editar</a>
+                        <form th:action="@{/usuarios/{id}/alternar-ativo(id=${u.id})}" method="post" class="inline-form">
+                            <button type="submit" class="btn btn-pequeno"
+                                    th:text="${u.ativo} ? 'Inativar' : 'Reativar'">Inativar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, '')}"
+      lang="pt-BR">
+<head>
+    <title>Acesso negado</title>
+</head>
+<body>
+<main>
+    <div class="card texto-centro" style="padding: 48px;">
+        <div style="font-size: 40px; opacity:.3;">⛔</div>
+        <h1 style="font-size: 20px; margin: 12px 0 6px;">Acesso negado</h1>
+        <p class="texto-fraco" style="margin-bottom: 20px;">
+            Seu perfil não tem permissão para acessar esta página.
+        </p>
+        <a th:href="@{/}" class="btn btn-primario">Voltar ao painel</a>
+    </div>
+</main>
+</body>
+</html>

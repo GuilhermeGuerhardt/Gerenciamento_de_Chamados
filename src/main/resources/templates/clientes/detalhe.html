@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'clientes')}"
+      lang="pt-BR">
+<head>
+    <title th:text="${cliente.nomeExibicao}">Cliente</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/clientes}" class="voltar">&larr; Voltar para clientes</a>
+
+    <div class="pagina-topo">
+        <div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h1 th:text="${cliente.nomeExibicao}">Empresa</h1>
+                <span class="tag" th:classappend="${cliente.ativo} ? 'tag-ativo' : 'tag-inativo'"
+                      th:text="${cliente.ativo} ? 'Ativo' : 'Inativo'">Ativo</span>
+            </div>
+            <p class="subtitulo" th:text="${cliente.razaoSocial}">Razão social</p>
+        </div>
+
+        <div class="acoes">
+            <a th:href="@{/chamados(clienteId=${cliente.id})}" class="btn">Ver chamados</a>
+            <a th:href="@{/clientes/{id}/editar(id=${cliente.id})}" class="btn">Editar</a>
+
+            <form th:action="@{/clientes/{id}/alternar-ativo(id=${cliente.id})}" method="post" class="inline-form">
+                <button type="submit" class="btn" th:text="${cliente.ativo} ? 'Inativar' : 'Reativar'">Inativar</button>
+            </form>
+
+            <form th:action="@{/clientes/{id}/excluir(id=${cliente.id})}" method="post" class="inline-form"
+                  sec:authorize="hasRole('ADMIN')"
+                  onsubmit="return confirm('Excluir este cliente? Só é possível se ele não tiver chamados.');">
+                <button type="submit" class="btn btn-perigo">Excluir</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="detalhe-grid">
+
+        <!-- Contatos -->
+        <div>
+            <div class="card">
+                <div class="card-titulo">
+                    <span>Contatos / funcionários</span>
+                    <a th:href="@{/clientes/{id}/contatos/novo(id=${cliente.id})}" class="btn btn-pequeno btn-primario">
+                        + Novo contato
+                    </a>
+                </div>
+
+                <div th:if="${#lists.isEmpty(contatos)}" class="vazio" style="padding:24px;">
+                    <span class="vazio-icone">☺</span>
+                    Nenhum contato cadastrado.
+                    <div style="margin-top:10px;">
+                        <a th:href="@{/clientes/{id}/contatos/novo(id=${cliente.id})}" class="btn btn-pequeno">
+                            Cadastrar primeiro contato
+                        </a>
+                    </div>
+                </div>
+
+                <div class="tabela-wrap" th:unless="${#lists.isEmpty(contatos)}">
+                    <table class="tabela">
+                        <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cargo / setor</th>
+                            <th>Telefones</th>
+                            <th>E-mail</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ct : ${contatos}">
+                            <td>
+                                <div class="celula-principal" th:text="${ct.nome}">Nome</div>
+                                <span th:if="${ct.principal}" class="tag prio-media">Principal</span>
+                                <span th:unless="${ct.ativo}" class="tag tag-inativo">Inativo</span>
+                            </td>
+                            <td class="celula-secundaria">
+                                <div th:if="${ct.cargo != null and !ct.cargo.isEmpty()}" th:text="${ct.cargo}">Cargo</div>
+                                <div th:if="${ct.setor != null and !ct.setor.isEmpty()}" th:text="${ct.setor}">Setor</div>
+                                <span th:if="${(ct.cargo == null or ct.cargo.isEmpty()) and (ct.setor == null or ct.setor.isEmpty())}">—</span>
+                            </td>
+                            <td class="celula-secundaria nowrap">
+                                <div th:if="${ct.celular != null and !ct.celular.isEmpty()}"
+                                     th:text="'📱 ' + ${ct.celular}">Celular</div>
+                                <div th:if="${ct.telefone != null and !ct.telefone.isEmpty()}"
+                                     th:text="'☎ ' + ${ct.telefone}">Telefone</div>
+                                <div th:if="${ct.ramal != null and !ct.ramal.isEmpty()}"
+                                     th:text="'Ramal ' + ${ct.ramal}">Ramal</div>
+                                <span th:if="${ct.telefonePrincipal == null and (ct.ramal == null or ct.ramal.isEmpty())}">—</span>
+                            </td>
+                            <td class="celula-secundaria">
+                                <a th:if="${ct.email != null and !ct.email.isEmpty()}"
+                                   th:href="'mailto:' + ${ct.email}" th:text="${ct.email}">email</a>
+                                <span th:unless="${ct.email != null and !ct.email.isEmpty()}">—</span>
+                            </td>
+                            <td class="texto-direita nowrap">
+                                <div class="linha-acoes">
+                                    <a th:href="@{/clientes/{cid}/contatos/{id}/editar(cid=${cliente.id}, id=${ct.id})}"
+                                       class="btn btn-pequeno">Editar</a>
+                                    <form th:action="@{/clientes/{cid}/contatos/{id}/excluir(cid=${cliente.id}, id=${ct.id})}"
+                                          method="post" class="inline-form"
+                                          onsubmit="return confirm('Excluir este contato?');">
+                                        <button type="submit" class="btn btn-pequeno btn-perigo">Excluir</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" th:if="${cliente.observacoes != null and !cliente.observacoes.isEmpty()}">
+                <div class="card-titulo">Observações</div>
+                <div class="texto-longo" th:text="${cliente.observacoes}">Observações</div>
+            </div>
+        </div>
+
+        <!-- Dados da empresa -->
+        <div>
+            <div class="card">
+                <div class="card-titulo">Dados da empresa</div>
+                <div class="dados-lista">
+                    <div class="dado">
+                        <span class="rotulo">Razão social</span>
+                        <span class="valor" th:text="${cliente.razaoSocial}">Razão social</span>
+                    </div>
+                    <div class="dado" th:if="${cliente.nomeFantasia != null and !cliente.nomeFantasia.isEmpty()}">
+                        <span class="rotulo">Nome fantasia</span>
+                        <span class="valor" th:text="${cliente.nomeFantasia}">Fantasia</span>
+                    </div>
+                    <div class="dado" th:if="${cliente.cnpj != null}">
+                        <span class="rotulo">CNPJ</span>
+                        <span class="valor" th:text="${cliente.cnpj}">CNPJ</span>
+                    </div>
+                    <div class="dado" th:if="${cliente.telefone != null and !cliente.telefone.isEmpty()}">
+                        <span class="rotulo">Telefone</span>
+                        <span class="valor" th:text="${cliente.telefone}">Telefone</span>
+                    </div>
+                    <div class="dado" th:if="${cliente.email != null and !cliente.email.isEmpty()}">
+                        <span class="rotulo">E-mail</span>
+                        <span class="valor">
+                            <a th:href="'mailto:' + ${cliente.email}" th:text="${cliente.email}">email</a>
+                        </span>
+                    </div>
+                    <div class="dado" th:if="${cliente.endereco != null and !cliente.endereco.isEmpty()}">
+                        <span class="rotulo">Endereço</span>
+                        <span class="valor" th:text="${cliente.endereco}">Endereço</span>
+                    </div>
+                    <div class="dado" th:if="${cliente.cidade != null and !cliente.cidade.isEmpty()}">
+                        <span class="rotulo">Cidade</span>
+                        <span class="valor"
+                              th:text="${cliente.uf != null and !cliente.uf.isEmpty()} ? |${cliente.cidade}/${cliente.uf}| : ${cliente.cidade}">Cidade</span>
+                    </div>
+                    <div class="dado">
+                        <span class="rotulo">Cadastrado em</span>
+                        <span class="valor" th:text="${#temporals.format(cliente.criadoEm, 'dd/MM/yyyy')}">data</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+</body>
+</html>

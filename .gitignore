@@ -1,0 +1,21 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Banco H2 (dados locais)
+data/
+*.mv.db
+*.trace.db
+
+# IDEs
+.idea/
+*.iml
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+
+# Sistema
+Thumbs.db
+.DS_Store

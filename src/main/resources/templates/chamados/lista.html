@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'chamados')}"
+      lang="pt-BR">
+<head>
+    <title>Chamados</title>
+</head>
+<body>
+<main>
+
+    <div class="pagina-topo">
+        <div>
+            <h1>Chamados</h1>
+            <p class="subtitulo">
+                <span th:text="${#lists.size(chamados)}">0</span> chamado(s) encontrado(s)
+            </p>
+        </div>
+        <div class="acoes">
+            <a th:href="@{/chamados/novo}" class="btn btn-primario">+ Abrir chamado</a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card">
+        <form th:action="@{/chamados}" method="get" class="filtros">
+
+            <div class="campo busca">
+                <label for="termo">Buscar</label>
+                <input type="search" id="termo" name="termo" th:value="${filtro.termo}"
+                       placeholder="Protocolo, título ou descrição">
+            </div>
+
+            <div class="campo">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="s : ${statusDisponiveis}"
+                            th:value="${s.name()}"
+                            th:text="${s.descricao}"
+                            th:selected="${filtro.status != null and filtro.status.name() == s.name()}">Status</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" name="prioridade">
+                    <option value="">Todas</option>
+                    <option th:each="p : ${prioridades}"
+                            th:value="${p.name()}"
+                            th:text="${p.descricao}"
+                            th:selected="${filtro.prioridade != null and filtro.prioridade.name() == p.name()}">Prioridade</option>
+                </select>
+            </div>
+
+            <div class="campo" th:if="${usuario.equipeInterna}">
+                <label for="clienteId">Cliente</label>
+                <select id="clienteId" name="clienteId">
+                    <option value="">Todos</option>
+                    <option th:each="c : ${clientes}"
+                            th:value="${c.id}"
+                            th:text="${c.nomeExibicao}"
+                            th:selected="${filtro.clienteId == c.id}">Cliente</option>
+                </select>
+            </div>
+
+            <div class="campo" th:if="${usuario.equipeInterna}">
+                <label for="tecnicoId">Técnico</label>
+                <select id="tecnicoId" name="tecnicoId">
+                    <option value="">Todos</option>
+                    <option th:each="t : ${tecnicos}"
+                            th:value="${t.id}"
+                            th:text="${t.nome}"
+                            th:selected="${filtro.tecnicoId == t.id}">Técnico</option>
+                </select>
+            </div>
+
+            <div class="acoes">
+                <button type="submit" class="btn btn-primario">Filtrar</button>
+                <a th:href="@{/chamados}" class="btn">Limpar</a>
+            </div>
+        </form>
+
+        <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;" th:if="${usuario.equipeInterna}">
+            <a th:href="@{/chamados(somenteAbertos=true)}" class="btn btn-pequeno">Somente em aberto</a>
+            <a th:href="@{/chamados(semTecnico=true, somenteAbertos=true)}" class="btn btn-pequeno">Sem técnico</a>
+            <a th:href="@{/chamados(tecnicoId=${usuario.id}, somenteAbertos=true)}" class="btn btn-pequeno">Meus chamados</a>
+        </div>
+    </div>
+
+    <!-- Lista -->
+    <div th:if="${#lists.isEmpty(chamados)}" class="card vazio">
+        <span class="vazio-icone">✉</span>
+        Nenhum chamado encontrado com esses filtros.
+    </div>
+
+    <div class="tabela-wrap" th:unless="${#lists.isEmpty(chamados)}">
+        <table class="tabela">
+            <thead>
+            <tr>
+                <th>Protocolo</th>
+                <th>Título</th>
+                <th th:if="${usuario.equipeInterna}">Cliente</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th th:if="${usuario.equipeInterna}">Técnico</th>
+                <th>Aberto em</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${chamados}" th:classappend="${c.atrasado} ? 'atrasado'">
+                <td>
+                    <a th:href="@{/chamados/{id}(id=${c.id})}" class="protocolo" th:text="${c.protocolo}">2026-0001</a>
+                </td>
+                <td>
+                    <div class="celula-principal" th:text="${c.titulo}">Título</div>
+                    <div class="celula-secundaria" th:if="${c.categoria != null and !c.categoria.isEmpty()}"
+                         th:text="${c.categoria}">Categoria</div>
+                </td>
+                <td th:if="${usuario.equipeInterna}">
+                    <div th:text="${c.cliente.nomeExibicao}">Cliente</div>
+                    <div class="celula-secundaria" th:if="${c.contato != null}" th:text="${c.contato.nome}">Contato</div>
+                </td>
+                <td>
+                    <span class="tag" th:classappend="${c.prioridade.cssClass}" th:text="${c.prioridade.descricao}">Média</span>
+                </td>
+                <td>
+                    <span class="tag" th:classappend="${c.status.cssClass}" th:text="${c.status.descricao}">Aberto</span>
+                    <span th:if="${c.atrasado}" class="tag tag-atraso" title="Passou do prazo da prioridade">Atrasado</span>
+                </td>
+                <td th:if="${usuario.equipeInterna}">
+                    <span th:if="${c.tecnico != null}" th:text="${c.tecnico.nome}">Técnico</span>
+                    <span th:if="${c.tecnico == null}" class="tag tag-neutra">Na fila</span>
+                </td>
+                <td class="celula-secundaria nowrap"
+                    th:text="${#temporals.format(c.abertoEm, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                <td class="texto-direita">
+                    <a th:href="@{/chamados/{id}(id=${c.id})}" class="btn btn-pequeno">Abrir</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>

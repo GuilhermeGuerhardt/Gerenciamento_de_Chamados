@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'chamados')}"
+      lang="pt-BR">
+<head>
+    <title th:text="${chamado.id} == null ? 'Novo chamado' : 'Editar chamado'">Chamado</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/chamados}" class="voltar">&larr; Voltar para chamados</a>
+
+    <div class="pagina-topo">
+        <div>
+            <h1 th:text="${chamado.id} == null ? 'Abrir chamado' : 'Editar chamado'">Abrir chamado</h1>
+            <p class="subtitulo" th:if="${chamado.id != null}"
+               th:text="|Protocolo ${chamado.protocolo}|">Protocolo</p>
+        </div>
+    </div>
+
+    <form th:action="@{/chamados/salvar}" th:object="${chamado}" method="post" class="card">
+        <input type="hidden" th:field="*{id}">
+        <input type="hidden" th:field="*{protocolo}">
+
+        <div class="form-grid">
+
+            <!-- Solicitante nao escolhe empresa: o campo vem fixo do seu cadastro. -->
+            <div class="campo col-6" th:if="${usuario.equipeInterna}">
+                <label for="cliente">Cliente *</label>
+                <select id="cliente" th:field="*{cliente}" required
+                        th:classappend="${#fields.hasErrors('cliente')} ? 'tem-erro'"
+                        onchange="carregarContatos(this.value)">
+                    <option value="">Selecione o cliente...</option>
+                    <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nomeExibicao}">Cliente</option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('cliente')}" th:errors="*{cliente}">Erro</span>
+            </div>
+
+            <div class="campo col-6" th:unless="${usuario.equipeInterna}">
+                <label>Cliente</label>
+                <input type="text" disabled
+                       th:value="${usuario.cliente != null ? usuario.cliente.nomeExibicao : '-'}">
+                <!-- Campo desabilitado nao e enviado: o hidden preenche o vinculo exigido
+                     pela validacao. O ChamadoService reescreve esse valor com a empresa do
+                     proprio usuario, entao alterar o hidden no navegador nao muda nada. -->
+                <input type="hidden" th:field="*{cliente}">
+                <span class="dica">Seus chamados são abertos para a sua empresa.</span>
+            </div>
+
+            <div class="campo col-6">
+                <label for="contato">Contato solicitante</label>
+                <select id="contato" th:field="*{contato}">
+                    <option value="">Nenhum / não informado</option>
+                    <option th:each="ct : ${contatos}" th:value="${ct.id}"
+                            th:text="${ct.cargo != null and !ct.cargo.isEmpty()} ? |${ct.nome} (${ct.cargo})| : ${ct.nome}">Contato</option>
+                </select>
+                <span class="dica">Quem pediu o atendimento na empresa.</span>
+            </div>
+
+            <div class="campo col-8">
+                <label for="titulo">Título *</label>
+                <input type="text" id="titulo" th:field="*{titulo}" required maxlength="150"
+                       th:classappend="${#fields.hasErrors('titulo')} ? 'tem-erro'"
+                       placeholder="Ex.: Impressora do financeiro não imprime">
+                <span class="erro-campo" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}">Erro</span>
+            </div>
+
+            <div class="campo col-4">
+                <label for="prioridade">Prioridade *</label>
+                <select id="prioridade" th:field="*{prioridade}" required>
+                    <option th:each="p : ${prioridades}" th:value="${p.name()}"
+                            th:text="|${p.descricao} — atender em até ${p.prazoHoras}h|">Prioridade</option>
+                </select>
+            </div>
+
+            <div class="campo col-4">
+                <label for="categoria">Categoria</label>
+                <input type="text" id="categoria" th:field="*{categoria}" maxlength="80"
+                       list="sugestoes-categoria" placeholder="Ex.: Hardware, Rede, Sistema">
+                <datalist id="sugestoes-categoria">
+                    <option value="Hardware"></option>
+                    <option value="Software"></option>
+                    <option value="Rede"></option>
+                    <option value="Impressora"></option>
+                    <option value="E-mail"></option>
+                    <option value="Servidor"></option>
+                    <option value="Acesso e senha"></option>
+                    <option value="Outros"></option>
+                </datalist>
+            </div>
+
+            <div class="campo col-4" th:if="${usuario.equipeInterna and chamado.id == null}">
+                <label for="tecnico">Atribuir a</label>
+                <select id="tecnico" th:field="*{tecnico}">
+                    <option value="">Deixar na fila</option>
+                    <option th:each="t : ${tecnicos}" th:value="${t.id}" th:text="${t.nome}">Técnico</option>
+                </select>
+                <span class="dica">Pode ser definido depois.</span>
+            </div>
+
+            <div class="campo">
+                <label for="descricao">Descrição *</label>
+                <textarea id="descricao" th:field="*{descricao}" required rows="7" maxlength="5000"
+                          th:classappend="${#fields.hasErrors('descricao')} ? 'tem-erro'"
+                          placeholder="Descreva o problema: o que acontece, desde quando, quais máquinas ou pessoas são afetadas e o que já foi tentado."></textarea>
+                <span class="erro-campo" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}">Erro</span>
+            </div>
+
+        </div>
+
+        <div class="form-rodape">
+            <a th:href="${chamado.id} == null ? @{/chamados} : @{/chamados/{id}(id=${chamado.id})}" class="btn">Cancelar</a>
+            <button type="submit" class="btn btn-primario"
+                    th:text="${chamado.id} == null ? 'Abrir chamado' : 'Salvar alterações'">Salvar</button>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Troca a lista de contatos quando o cliente muda, sem recarregar a pagina.
+        const urlContatos = /*[[@{/chamados/contatos}]]*/ '/chamados/contatos';
+
+        function carregarContatos(clienteId) {
+            const select = document.getElementById('contato');
+            select.innerHTML = '<option value="">Nenhum / não informado</option>';
+
+            if (!clienteId) {
+                return;
+            }
+
+            fetch(urlContatos + '?clienteId=' + encodeURIComponent(clienteId))
+                .then(resposta => resposta.ok ? resposta.json() : [])
+                .then(contatos => {
+                    contatos.forEach(c => {
+                        const opcao = document.createElement('option');
+                        opcao.value = c.id;
+                        opcao.textContent = c.cargo ? c.nome + ' (' + c.cargo + ')' : c.nome;
+                        select.appendChild(opcao);
+                    });
+                })
+                .catch(() => {
+                    // Sem contatos carregados o chamado ainda pode ser aberto: o campo e opcional.
+                });
+        }
+        /*]]>*/
+    </script>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'usuarios')}"
+      lang="pt-BR">
+<head>
+    <title th:text="${usuario.id} == null ? 'Novo usuário' : 'Editar usuário'">Usuário</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/usuarios}" class="voltar">&larr; Voltar para usuários</a>
+
+    <div class="pagina-topo">
+        <div>
+            <h1 th:text="${usuario.id} == null ? 'Novo usuário' : 'Editar usuário'">Novo usuário</h1>
+            <p class="subtitulo">Defina o perfil de acesso conforme a função da pessoa.</p>
+        </div>
+    </div>
+
+    <form th:action="@{/usuarios/salvar}" th:object="${usuario}" method="post" class="card">
+        <!-- A senha nunca trafega pelo formulario: o UsuarioService preserva o hash
+             atual quando o campo "nova senha" vem vazio. -->
+        <input type="hidden" th:field="*{id}">
+
+        <fieldset>
+            <legend>Dados pessoais</legend>
+            <div class="form-grid">
+                <div class="campo col-6">
+                    <label for="nome">Nome completo *</label>
+                    <input type="text" id="nome" th:field="*{nome}" required maxlength="120"
+                           th:classappend="${#fields.hasErrors('nome')} ? 'tem-erro'">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">Erro</span>
+                </div>
+
+                <div class="campo col-6">
+                    <label for="email">E-mail (login) *</label>
+                    <input type="email" id="email" th:field="*{email}" required maxlength="150"
+                           th:classappend="${#fields.hasErrors('email')} ? 'tem-erro'">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Erro</span>
+                </div>
+
+                <div class="campo col-4">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" th:field="*{telefone}" maxlength="20">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Acesso e permissões</legend>
+            <div class="form-grid">
+                <div class="campo col-4">
+                    <label for="perfil">Perfil *</label>
+                    <select id="perfil" th:field="*{perfil}" required onchange="ajustarCampos(this.value)">
+                        <option th:each="p : ${perfis}" th:value="${p.name()}" th:text="${p.descricao}">Perfil</option>
+                    </select>
+                </div>
+
+                <div class="campo col-4" id="campo-cliente">
+                    <label for="cliente">Empresa do solicitante *</label>
+                    <select id="cliente" th:field="*{cliente}">
+                        <option value="">Selecione a empresa...</option>
+                        <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nomeExibicao}">Cliente</option>
+                    </select>
+                    <span class="dica">Define quais chamados essa pessoa enxerga.</span>
+                </div>
+
+                <div class="campo col-4" id="campo-especialidade">
+                    <label for="especialidade">Especialidade</label>
+                    <input type="text" id="especialidade" th:field="*{especialidade}" maxlength="80"
+                           placeholder="Ex.: Redes, Servidores">
+                </div>
+
+                <div class="campo col-4">
+                    <label for="novaSenha" th:text="${usuario.id} == null ? 'Senha *' : 'Nova senha'">Senha</label>
+                    <input type="password" id="novaSenha" name="novaSenha" autocomplete="new-password"
+                           th:required="${usuario.id} == null"
+                           th:placeholder="${usuario.id} == null ? 'Mínimo 6 caracteres' : 'Deixe em branco para manter a atual'">
+                    <span class="dica" th:if="${usuario.id != null}">
+                        Preencha apenas se quiser trocar a senha desta pessoa.
+                    </span>
+                </div>
+
+                <div class="campo-checkbox">
+                    <input type="checkbox" id="ativo" th:field="*{ativo}">
+                    <label for="ativo">Usuário ativo (pode entrar no sistema)</label>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-rodape">
+            <a th:href="@{/usuarios}" class="btn">Cancelar</a>
+            <button type="submit" class="btn btn-primario">Salvar usuário</button>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Empresa so vale para solicitante; especialidade so para a equipe tecnica.
+        function ajustarCampos(perfil) {
+            const campoCliente = document.getElementById('campo-cliente');
+            const campoEspecialidade = document.getElementById('campo-especialidade');
+            const selectCliente = document.getElementById('cliente');
+
+            const ehSolicitante = (perfil === 'SOLICITANTE');
+
+            campoCliente.style.display = ehSolicitante ? 'flex' : 'none';
+            selectCliente.required = ehSolicitante;
+            campoEspecialidade.style.display = (perfil === 'TECNICO') ? 'flex' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            ajustarCampos(document.getElementById('perfil').value);
+        });
+        /*]]>*/
+    </script>
+
+</main>
+</body>
+</html>

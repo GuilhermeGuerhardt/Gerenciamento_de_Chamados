@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'clientes')}"
+      lang="pt-BR">
+<head>
+    <title th:text="${contato.id} == null ? 'Novo contato' : 'Editar contato'">Contato</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/clientes/{id}(id=${cliente.id})}" class="voltar">
+        &larr; Voltar para <span th:text="${cliente.nomeExibicao}">cliente</span>
+    </a>
+
+    <div class="pagina-topo">
+        <div>
+            <h1 th:text="${contato.id} == null ? 'Novo contato' : 'Editar contato'">Novo contato</h1>
+            <p class="subtitulo" th:text="|Funcionário de ${cliente.nomeExibicao}|">Empresa</p>
+        </div>
+    </div>
+
+    <form th:action="@{/clientes/{id}/contatos/salvar(id=${cliente.id})}" th:object="${contato}"
+          method="post" class="card">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="form-grid">
+            <div class="campo col-6">
+                <label for="nome">Nome *</label>
+                <input type="text" id="nome" th:field="*{nome}" required maxlength="120"
+                       th:classappend="${#fields.hasErrors('nome')} ? 'tem-erro'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">Erro</span>
+            </div>
+
+            <div class="campo col-3">
+                <label for="cargo">Cargo</label>
+                <input type="text" id="cargo" th:field="*{cargo}" maxlength="80"
+                       placeholder="Ex.: Analista de TI">
+            </div>
+
+            <div class="campo col-3">
+                <label for="setor">Setor</label>
+                <input type="text" id="setor" th:field="*{setor}" maxlength="80"
+                       placeholder="Ex.: Financeiro">
+            </div>
+
+            <div class="campo col-3">
+                <label for="celular">Celular</label>
+                <input type="text" id="celular" th:field="*{celular}" maxlength="20"
+                       placeholder="(11) 99999-0000">
+            </div>
+
+            <div class="campo col-3">
+                <label for="telefone">Telefone fixo</label>
+                <input type="text" id="telefone" th:field="*{telefone}" maxlength="20"
+                       placeholder="(11) 4000-0000">
+            </div>
+
+            <div class="campo col-2">
+                <label for="ramal">Ramal</label>
+                <input type="text" id="ramal" th:field="*{ramal}" maxlength="20" placeholder="204">
+            </div>
+
+            <div class="campo col-4">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" th:field="*{email}" maxlength="150"
+                       th:classappend="${#fields.hasErrors('email')} ? 'tem-erro'">
+                <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Erro</span>
+            </div>
+
+            <div class="campo">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" th:field="*{observacoes}" rows="2" maxlength="500"
+                          placeholder="Horário em que costuma estar disponível, preferências de contato..."></textarea>
+            </div>
+
+            <div class="campo-checkbox">
+                <input type="checkbox" id="principal" th:field="*{principal}">
+                <label for="principal">Contato principal da empresa (aparece primeiro ao abrir um chamado)</label>
+            </div>
+
+            <div class="campo-checkbox">
+                <input type="checkbox" id="ativo" th:field="*{ativo}">
+                <label for="ativo">Contato ativo</label>
+            </div>
+        </div>
+
+        <div class="form-rodape">
+            <a th:href="@{/clientes/{id}(id=${cliente.id})}" class="btn">Cancelar</a>
+            <button type="submit" class="btn btn-primario">Salvar contato</button>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>

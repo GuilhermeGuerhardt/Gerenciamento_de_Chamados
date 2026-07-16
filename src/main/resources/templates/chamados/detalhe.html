@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'chamados')}"
+      lang="pt-BR">
+<head>
+    <title th:text="|Chamado ${chamado.protocolo}|">Chamado</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/chamados}" class="voltar">&larr; Voltar para chamados</a>
+
+    <div class="pagina-topo">
+        <div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span class="protocolo" style="font-size:14px;" th:text="${chamado.protocolo}">2026-0001</span>
+                <span class="tag" th:classappend="${chamado.status.cssClass}" th:text="${chamado.status.descricao}">Aberto</span>
+                <span class="tag" th:classappend="${chamado.prioridade.cssClass}" th:text="${chamado.prioridade.descricao}">Média</span>
+                <span th:if="${chamado.atrasado}" class="tag tag-atraso">Atrasado</span>
+            </div>
+            <h1 style="margin-top:6px;" th:text="${chamado.titulo}">Título</h1>
+            <p class="subtitulo">
+                Aberto em <span th:text="${#temporals.format(chamado.abertoEm, 'dd/MM/yyyy ''às'' HH:mm')}">data</span>
+                <span th:if="${chamado.solicitante != null}" th:text="| por ${chamado.solicitante.nome}|"></span>
+            </p>
+        </div>
+
+        <div class="acoes" th:if="${podeEditar}">
+            <a th:href="@{/chamados/{id}/editar(id=${chamado.id})}" class="btn"
+               th:unless="${chamado.status.encerrado}">Editar</a>
+
+            <form th:action="@{/chamados/{id}/assumir(id=${chamado.id})}" method="post" class="inline-form"
+                  th:if="${chamado.tecnico == null and !chamado.status.encerrado}">
+                <button type="submit" class="btn btn-primario">Assumir</button>
+            </form>
+
+            <form th:action="@{/chamados/{id}/reabrir(id=${chamado.id})}" method="post" class="inline-form"
+                  th:if="${chamado.status.encerrado or chamado.status.name() == 'RESOLVIDO'}">
+                <button type="submit" class="btn">Reabrir</button>
+            </form>
+
+            <form th:action="@{/chamados/{id}/excluir(id=${chamado.id})}" method="post" class="inline-form"
+                  sec:authorize="hasRole('ADMIN')"
+                  onsubmit="return confirm('Excluir este chamado permanentemente? Esta ação não pode ser desfeita.');">
+                <button type="submit" class="btn btn-perigo">Excluir</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="detalhe-grid">
+
+        <!-- Coluna principal -->
+        <div>
+            <div class="card">
+                <div class="card-titulo">Descrição</div>
+                <div class="texto-longo" th:text="${chamado.descricao}">Descrição</div>
+            </div>
+
+            <div class="card" th:if="${chamado.solucao != null and !chamado.solucao.isEmpty()}">
+                <div class="card-titulo">Solução aplicada</div>
+                <div class="bloco-solucao texto-longo" th:text="${chamado.solucao}">Solução</div>
+            </div>
+
+            <!-- Comentarios -->
+            <div class="card" id="comentarios">
+                <div class="card-titulo">
+                    <span>Andamento</span>
+                    <span class="texto-fraco" style="font-size:12px; font-weight:400;"
+                          th:text="|${#lists.size(comentarios)} comentário(s)|">0</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(comentarios)}" class="vazio" style="padding:20px;">
+                    Nenhum comentário ainda. Registre o andamento do atendimento abaixo.
+                </div>
+
+                <div class="comentarios" th:unless="${#lists.isEmpty(comentarios)}">
+                    <div th:each="cm : ${comentarios}" class="comentario"
+                         th:classappend="${cm.interno} ? 'interno'">
+                        <span class="avatar"
+                              th:text="${cm.autor != null} ? ${#strings.substring(cm.autor.nome,0,1)} : '?'">A</span>
+                        <div class="comentario-corpo">
+                            <div class="comentario-topo">
+                                <strong th:text="${cm.autor != null} ? ${cm.autor.nome} : 'Sistema'">Autor</strong>
+                                <span class="data" th:text="${#temporals.format(cm.criadoEm, 'dd/MM/yyyy HH:mm')}">data</span>
+                                <span th:if="${cm.interno}" class="tag prio-alta" title="Não aparece para o cliente">Nota interna</span>
+                            </div>
+                            <div class="texto-longo" th:text="${cm.texto}">Texto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form th:action="@{/chamados/{id}/comentar(id=${chamado.id})}" method="post"
+                      th:unless="${chamado.status.encerrado}">
+                    <div class="campo">
+                        <label for="texto">Novo comentário</label>
+                        <textarea id="texto" name="texto" required rows="3" maxlength="3000"
+                                  placeholder="Descreva o que foi feito ou peça mais informações..."></textarea>
+                    </div>
+                    <div class="campo-checkbox" th:if="${usuario.equipeInterna}" style="margin-top:8px;">
+                        <input type="checkbox" id="interno" name="interno" value="true">
+                        <label for="interno">Nota interna (o cliente não vê este comentário)</label>
+                    </div>
+                    <div class="form-rodape">
+                        <button type="submit" class="btn btn-primario">Comentar</button>
+                    </div>
+                </form>
+
+                <div th:if="${chamado.status.encerrado}" class="alerta alerta-info mt-16 mb-0">
+                    Este chamado está <span th:text="${chamado.status.descricao.toLowerCase()}">fechado</span>
+                    e não aceita novos comentários. Reabra-o para continuar o atendimento.
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna lateral -->
+        <div>
+            <!-- Atendimento -->
+            <div class="card" th:if="${podeEditar}">
+                <div class="card-titulo">Atendimento</div>
+
+                <form th:action="@{/chamados/{id}/atribuir(id=${chamado.id})}" method="post"
+                      style="margin-bottom:16px;">
+                    <div class="campo">
+                        <label for="tecnicoId">Técnico responsável</label>
+                        <select id="tecnicoId" name="tecnicoId" th:disabled="${chamado.status.encerrado}">
+                            <option value="">Deixar na fila</option>
+                            <option th:each="t : ${tecnicos}" th:value="${t.id}" th:text="${t.nome}"
+                                    th:selected="${chamado.tecnico != null and chamado.tecnico.id == t.id}">Técnico</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-pequeno mt-16"
+                            th:disabled="${chamado.status.encerrado}">Salvar responsável</button>
+                </form>
+
+                <form th:action="@{/chamados/{id}/status(id=${chamado.id})}" method="post">
+                    <div class="campo">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" onchange="alternarSolucao(this.value)">
+                            <option th:each="s : ${statusDisponiveis}" th:value="${s.name()}"
+                                    th:text="${s.descricao}"
+                                    th:selected="${chamado.status.name() == s.name()}">Status</option>
+                        </select>
+                    </div>
+
+                    <div class="campo mt-16" id="campo-solucao" style="display:none;">
+                        <label for="solucao">Solução</label>
+                        <textarea id="solucao" name="solucao" rows="4" maxlength="5000"
+                                  th:text="${chamado.solucao}"
+                                  placeholder="Descreva o que resolveu o problema."></textarea>
+                        <span class="dica">Obrigatória para resolver ou fechar o chamado.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primario btn-pequeno mt-16">Atualizar status</button>
+                </form>
+            </div>
+
+            <!-- Dados -->
+            <div class="card">
+                <div class="card-titulo">Informações</div>
+                <div class="dados-lista">
+                    <div class="dado">
+                        <span class="rotulo">Cliente</span>
+                        <span class="valor">
+                            <a th:if="${usuario.equipeInterna}"
+                               th:href="@{/clientes/{id}(id=${chamado.cliente.id})}"
+                               th:text="${chamado.cliente.nomeExibicao}">Cliente</a>
+                            <span th:unless="${usuario.equipeInterna}" th:text="${chamado.cliente.nomeExibicao}">Cliente</span>
+                        </span>
+                    </div>
+
+                    <div class="dado" th:if="${chamado.contato != null}">
+                        <span class="rotulo">Contato</span>
+                        <span class="valor" th:text="${chamado.contato.nome}">Contato</span>
+                        <span class="celula-secundaria" th:if="${chamado.contato.cargo != null}"
+                              th:text="${chamado.contato.cargo}">Cargo</span>
+                        <span class="celula-secundaria" th:if="${chamado.contato.telefonePrincipal != null}"
+                              th:text="'☎ ' + ${chamado.contato.telefonePrincipal}">Telefone</span>
+                        <span class="celula-secundaria" th:if="${chamado.contato.email != null}"
+                              th:text="'✉ ' + ${chamado.contato.email}">E-mail</span>
+                    </div>
+
+                    <div class="dado">
+                        <span class="rotulo">Técnico</span>
+                        <span class="valor" th:if="${chamado.tecnico != null}" th:text="${chamado.tecnico.nome}">Técnico</span>
+                        <span class="valor vazio-txt" th:if="${chamado.tecnico == null}">Ainda na fila</span>
+                    </div>
+
+                    <div class="dado" th:if="${chamado.categoria != null and !chamado.categoria.isEmpty()}">
+                        <span class="rotulo">Categoria</span>
+                        <span class="valor" th:text="${chamado.categoria}">Categoria</span>
+                    </div>
+
+                    <div class="dado">
+                        <span class="rotulo">Prazo da prioridade</span>
+                        <span class="valor" th:text="|Atender em até ${chamado.prioridade.prazoHoras}h|">24h</span>
+                    </div>
+
+                    <div class="dado" th:if="${chamado.atualizadoEm != null}">
+                        <span class="rotulo">Última atualização</span>
+                        <span class="valor" th:text="${#temporals.format(chamado.atualizadoEm, 'dd/MM/yyyy HH:mm')}">data</span>
+                    </div>
+
+                    <div class="dado" th:if="${chamado.fechadoEm != null}">
+                        <span class="rotulo">Encerrado em</span>
+                        <span class="valor" th:text="${#temporals.format(chamado.fechadoEm, 'dd/MM/yyyy HH:mm')}">data</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historico -->
+            <div class="card">
+                <div class="card-titulo">Histórico</div>
+
+                <div th:if="${#lists.isEmpty(historico)}" class="texto-fraco" style="font-size:13px;">
+                    Sem registros.
+                </div>
+
+                <ul class="historico">
+                    <li th:each="h : ${historico}">
+                        <span class="ponto"></span>
+                        <div class="hist-texto">
+                            <div th:text="${h.descricao}">Descrição</div>
+                            <div class="hist-meta">
+                                <span th:text="${#temporals.format(h.criadoEm, 'dd/MM/yyyy HH:mm')}">data</span>
+                                <span th:if="${h.autor != null}" th:text="' · ' + ${h.autor.nome}">autor</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // O campo de solucao so faz sentido ao resolver ou fechar; nesses casos ele e obrigatorio.
+        function alternarSolucao(status) {
+            const campo = document.getElementById('campo-solucao');
+            if (!campo) {
+                return;
+            }
+            const precisaSolucao = (status === 'RESOLVIDO' || status === 'FECHADO');
+            campo.style.display = precisaSolucao ? 'flex' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const select = document.getElementById('status');
+            if (select) {
+                alternarSolucao(select.value);
+            }
+        });
+        /*]]>*/
+    </script>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'painel')}"
+      lang="pt-BR">
+<head>
+    <title>Painel - Chamados</title>
+</head>
+<body>
+<main>
+
+    <div class="pagina-topo">
+        <div>
+            <h1 th:text="|${saudacao}, ${usuario.nome}|">Bom dia</h1>
+            <p class="subtitulo" th:if="${usuario.equipeInterna}">
+                Visão geral dos atendimentos.
+            </p>
+            <p class="subtitulo" th:unless="${usuario.equipeInterna}"
+               th:text="|Chamados de ${usuario.cliente != null ? usuario.cliente.nomeExibicao : '-'}|">
+                Seus chamados
+            </p>
+        </div>
+        <div class="acoes">
+            <a th:href="@{/chamados/novo}" class="btn btn-primario">+ Abrir chamado</a>
+        </div>
+    </div>
+
+    <!-- Contadores -->
+    <div class="cards-numeros">
+        <a th:href="@{/chamados(status='ABERTO')}" class="card-numero azul">
+            <div class="valor" th:text="${abertos}">0</div>
+            <div class="rotulo">Abertos</div>
+        </a>
+        <a th:href="@{/chamados(status='EM_ANDAMENTO')}" class="card-numero amarelo">
+            <div class="valor" th:text="${emAndamento}">0</div>
+            <div class="rotulo">Em andamento</div>
+        </a>
+        <a th:href="@{/chamados(status='AGUARDANDO_CLIENTE')}" class="card-numero">
+            <div class="valor" th:text="${aguardando}">0</div>
+            <div class="rotulo">Aguardando cliente</div>
+        </a>
+        <a th:href="@{/chamados(status='RESOLVIDO')}" class="card-numero verde">
+            <div class="valor" th:text="${resolvidos}">0</div>
+            <div class="rotulo">Resolvidos</div>
+        </a>
+
+        <a th:if="${usuario.equipeInterna}" th:href="@{/chamados(semTecnico=true, somenteAbertos=true)}"
+           class="card-numero vermelho">
+            <div class="valor" th:text="${semTecnico}">0</div>
+            <div class="rotulo">Sem técnico</div>
+        </a>
+        <a th:if="${usuario.equipeInterna}" th:href="@{/chamados(tecnicoId=${usuario.id}, somenteAbertos=true)}"
+           class="card-numero">
+            <div class="valor" th:text="${minhaFila}">0</div>
+            <div class="rotulo">Comigo</div>
+        </a>
+    </div>
+
+    <!-- Minha fila (equipe interna) -->
+    <div class="card" th:if="${usuario.equipeInterna}">
+        <div class="card-titulo">
+            <span>Meus chamados em aberto</span>
+            <a th:href="@{/chamados(tecnicoId=${usuario.id}, somenteAbertos=true)}" class="btn btn-pequeno">Ver todos</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(meusChamados)}" class="vazio">
+            <span class="vazio-icone">☕</span>
+            Nenhum chamado atribuído a você no momento.
+        </div>
+
+        <div class="tabela-wrap" th:unless="${#lists.isEmpty(meusChamados)}">
+            <table class="tabela">
+                <thead>
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Título</th>
+                    <th>Cliente</th>
+                    <th>Prioridade</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${meusChamados}" th:classappend="${c.atrasado} ? 'atrasado'">
+                    <td><a th:href="@{/chamados/{id}(id=${c.id})}" class="protocolo" th:text="${c.protocolo}">2026-0001</a></td>
+                    <td class="celula-principal" th:text="${c.titulo}">Título</td>
+                    <td class="celula-secundaria" th:text="${c.cliente.nomeExibicao}">Cliente</td>
+                    <td><span class="tag" th:classappend="${c.prioridade.cssClass}" th:text="${c.prioridade.descricao}">Média</span></td>
+                    <td><span class="tag" th:classappend="${c.status.cssClass}" th:text="${c.status.descricao}">Aberto</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recentes -->
+    <div class="card">
+        <div class="card-titulo">
+            <span th:text="${usuario.equipeInterna} ? 'Chamados recentes' : 'Seus chamados recentes'">Recentes</span>
+            <a th:href="@{/chamados}" class="btn btn-pequeno">Ver todos</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(recentes)}" class="vazio">
+            <span class="vazio-icone">✉</span>
+            Nenhum chamado registrado ainda.
+            <div style="margin-top:12px;">
+                <a th:href="@{/chamados/novo}" class="btn btn-primario btn-pequeno">Abrir o primeiro chamado</a>
+            </div>
+        </div>
+
+        <div class="tabela-wrap" th:unless="${#lists.isEmpty(recentes)}">
+            <table class="tabela">
+                <thead>
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Título</th>
+                    <th th:if="${usuario.equipeInterna}">Cliente</th>
+                    <th>Prioridade</th>
+                    <th>Status</th>
+                    <th th:if="${usuario.equipeInterna}">Técnico</th>
+                    <th>Aberto em</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${recentes}" th:classappend="${c.atrasado} ? 'atrasado'">
+                    <td><a th:href="@{/chamados/{id}(id=${c.id})}" class="protocolo" th:text="${c.protocolo}">2026-0001</a></td>
+                    <td class="celula-principal" th:text="${c.titulo}">Título</td>
+                    <td th:if="${usuario.equipeInterna}" class="celula-secundaria" th:text="${c.cliente.nomeExibicao}">Cliente</td>
+                    <td><span class="tag" th:classappend="${c.prioridade.cssClass}" th:text="${c.prioridade.descricao}">Média</span></td>
+                    <td><span class="tag" th:classappend="${c.status.cssClass}" th:text="${c.status.descricao}">Aberto</span></td>
+                    <td th:if="${usuario.equipeInterna}" class="celula-secundaria">
+                        <span th:if="${c.tecnico != null}" th:text="${c.tecnico.nome}">Técnico</span>
+                        <span th:if="${c.tecnico == null}" class="tag tag-neutra">Na fila</span>
+                    </td>
+                    <td class="celula-secundaria nowrap"
+                        th:text="${#temporals.format(c.abertoEm, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Resumo administrativo -->
+    <div class="cards-numeros" sec:authorize="hasRole('ADMIN')" style="margin-top:4px;">
+        <a th:href="@{/clientes}" class="card-numero">
+            <div class="valor" th:text="${totalClientes}">0</div>
+            <div class="rotulo">Clientes ativos</div>
+        </a>
+        <a th:href="@{/usuarios}" class="card-numero">
+            <div class="valor" th:text="${totalUsuarios}">0</div>
+            <div class="rotulo">Usuários ativos</div>
+        </a>
+        <div class="card-numero">
+            <div class="valor" th:text="${abertosHoje}">0</div>
+            <div class="rotulo">Abertos hoje</div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

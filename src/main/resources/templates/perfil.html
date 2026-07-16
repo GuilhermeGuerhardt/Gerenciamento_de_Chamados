@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'perfil')}"
+      lang="pt-BR">
+<head>
+    <title>Meu perfil</title>
+</head>
+<body>
+<main>
+
+    <div class="pagina-topo">
+        <div>
+            <h1>Meu perfil</h1>
+            <p class="subtitulo">Seus dados de acesso.</p>
+        </div>
+    </div>
+
+    <div class="detalhe-grid">
+
+        <div class="card">
+            <div class="card-titulo">Alterar senha</div>
+
+            <form th:action="@{/meu-perfil/senha}" method="post">
+                <div class="form-grid">
+                    <div class="campo col-6">
+                        <label for="senhaAtual">Senha atual *</label>
+                        <input type="password" id="senhaAtual" name="senhaAtual" required
+                               autocomplete="current-password">
+                    </div>
+
+                    <div class="campo col-6"></div>
+
+                    <div class="campo col-6">
+                        <label for="novaSenha">Nova senha *</label>
+                        <input type="password" id="novaSenha" name="novaSenha" required minlength="6"
+                               autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+                    </div>
+
+                    <div class="campo col-6">
+                        <label for="confirmacao">Confirmar nova senha *</label>
+                        <input type="password" id="confirmacao" name="confirmacao" required minlength="6"
+                               autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="form-rodape">
+                    <button type="submit" class="btn btn-primario">Alterar senha</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-titulo">Meus dados</div>
+            <div class="dados-lista">
+                <div class="dado">
+                    <span class="rotulo">Nome</span>
+                    <span class="valor" th:text="${usuario.nome}">Nome</span>
+                </div>
+                <div class="dado">
+                    <span class="rotulo">E-mail</span>
+                    <span class="valor" th:text="${usuario.email}">email</span>
+                </div>
+                <div class="dado">
+                    <span class="rotulo">Perfil</span>
+                    <span class="valor">
+                        <span class="tag prio-media" th:text="${usuario.perfil.descricao}">Perfil</span>
+                    </span>
+                </div>
+                <div class="dado" th:if="${usuario.cliente != null}">
+                    <span class="rotulo">Empresa</span>
+                    <span class="valor" th:text="${usuario.cliente.nomeExibicao}">Empresa</span>
+                </div>
+                <div class="dado" th:if="${usuario.especialidade != null and !usuario.especialidade.isEmpty()}">
+                    <span class="rotulo">Especialidade</span>
+                    <span class="valor" th:text="${usuario.especialidade}">Especialidade</span>
+                </div>
+                <div class="dado" th:if="${usuario.telefone != null and !usuario.telefone.isEmpty()}">
+                    <span class="rotulo">Telefone</span>
+                    <span class="valor" th:text="${usuario.telefone}">Telefone</span>
+                </div>
+                <div class="dado">
+                    <span class="rotulo">Cadastrado em</span>
+                    <span class="valor" th:text="${#temporals.format(usuario.criadoEm, 'dd/MM/yyyy')}">data</span>
+                </div>
+            </div>
+            <p class="texto-fraco" style="font-size:12px; margin-top:14px;">
+                Para alterar nome, e-mail ou perfil, fale com um administrador.
+            </p>
+        </div>
+
+    </div>
+
+</main>
+</body>
+</html>

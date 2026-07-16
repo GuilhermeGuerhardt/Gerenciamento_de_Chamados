@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'clientes')}"
+      lang="pt-BR">
+<head>
+    <title>Clientes</title>
+</head>
+<body>
+<main>
+
+    <div class="pagina-topo">
+        <div>
+            <h1>Clientes</h1>
+            <p class="subtitulo">
+                <span th:text="${#lists.size(clientes)}">0</span> empresa(s) cadastrada(s)
+            </p>
+        </div>
+        <div class="acoes">
+            <a th:href="@{/clientes/novo}" class="btn btn-primario">+ Novo cliente</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <form th:action="@{/clientes}" method="get" class="filtros">
+            <div class="campo busca">
+                <label for="busca">Buscar</label>
+                <input type="search" id="busca" name="busca" th:value="${busca}"
+                       placeholder="Razão social, nome fantasia ou CNPJ">
+            </div>
+            <div class="acoes">
+                <button type="submit" class="btn btn-primario">Buscar</button>
+                <a th:href="@{/clientes}" class="btn">Limpar</a>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${#lists.isEmpty(clientes)}" class="card vazio">
+        <span class="vazio-icone">▤</span>
+        Nenhum cliente encontrado.
+        <div style="margin-top:12px;">
+            <a th:href="@{/clientes/novo}" class="btn btn-primario btn-pequeno">Cadastrar cliente</a>
+        </div>
+    </div>
+
+    <div class="tabela-wrap" th:unless="${#lists.isEmpty(clientes)}">
+        <table class="tabela">
+            <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>CNPJ</th>
+                <th>Telefone</th>
+                <th>Cidade</th>
+                <th>Situação</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${clientes}">
+                <td>
+                    <a th:href="@{/clientes/{id}(id=${c.id})}" class="celula-principal"
+                       th:text="${c.nomeExibicao}">Empresa</a>
+                    <div class="celula-secundaria" th:if="${c.nomeFantasia != null and !c.nomeFantasia.isEmpty()}"
+                         th:text="${c.razaoSocial}">Razão social</div>
+                </td>
+                <td class="celula-secundaria" th:text="${c.cnpj != null} ? ${c.cnpj} : '—'">—</td>
+                <td class="celula-secundaria" th:text="${c.telefone != null} ? ${c.telefone} : '—'">—</td>
+                <td class="celula-secundaria">
+                    <span th:if="${c.cidade != null and !c.cidade.isEmpty()}"
+                          th:text="${c.uf != null and !c.uf.isEmpty()} ? |${c.cidade}/${c.uf}| : ${c.cidade}">Cidade</span>
+                    <span th:unless="${c.cidade != null and !c.cidade.isEmpty()}">—</span>
+                </td>
+                <td>
+                    <span class="tag" th:classappend="${c.ativo} ? 'tag-ativo' : 'tag-inativo'"
+                          th:text="${c.ativo} ? 'Ativo' : 'Inativo'">Ativo</span>
+                </td>
+                <td class="texto-direita">
+                    <a th:href="@{/clientes/{id}(id=${c.id})}" class="btn btn-pequeno">Abrir</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>

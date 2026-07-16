@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: base(~{::title}, ~{::main}, 'clientes')}"
+      lang="pt-BR">
+<head>
+    <title th:text="${cliente.id} == null ? 'Novo cliente' : 'Editar cliente'">Cliente</title>
+</head>
+<body>
+<main>
+
+    <a th:href="@{/clientes}" class="voltar">&larr; Voltar para clientes</a>
+
+    <div class="pagina-topo">
+        <div>
+            <h1 th:text="${cliente.id} == null ? 'Novo cliente' : 'Editar cliente'">Novo cliente</h1>
+            <p class="subtitulo">Dados da empresa atendida.</p>
+        </div>
+    </div>
+
+    <form th:action="@{/clientes/salvar}" th:object="${cliente}" method="post" class="card">
+        <input type="hidden" th:field="*{id}">
+
+        <fieldset>
+            <legend>Identificação</legend>
+            <div class="form-grid">
+                <div class="campo col-8">
+                    <label for="razaoSocial">Razão social *</label>
+                    <input type="text" id="razaoSocial" th:field="*{razaoSocial}" required maxlength="150"
+                           th:classappend="${#fields.hasErrors('razaoSocial')} ? 'tem-erro'">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('razaoSocial')}" th:errors="*{razaoSocial}">Erro</span>
+                </div>
+
+                <div class="campo col-4">
+                    <label for="cnpj">CNPJ</label>
+                    <input type="text" id="cnpj" th:field="*{cnpj}" maxlength="20" placeholder="00.000.000/0000-00">
+                </div>
+
+                <div class="campo col-8">
+                    <label for="nomeFantasia">Nome fantasia</label>
+                    <input type="text" id="nomeFantasia" th:field="*{nomeFantasia}" maxlength="150">
+                    <span class="dica">É o nome que aparece nas listas e nos chamados.</span>
+                </div>
+
+                <div class="campo-checkbox col-4" style="align-self:end; padding-bottom:8px;">
+                    <input type="checkbox" id="ativo" th:field="*{ativo}">
+                    <label for="ativo">Cliente ativo</label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Contato da empresa</legend>
+            <div class="form-grid">
+                <div class="campo col-4">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" th:field="*{telefone}" maxlength="20" placeholder="(11) 4000-0000">
+                </div>
+
+                <div class="campo col-8">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" th:field="*{email}" maxlength="150"
+                           th:classappend="${#fields.hasErrors('email')} ? 'tem-erro'">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Erro</span>
+                </div>
+
+                <div class="campo col-6">
+                    <label for="endereco">Endereço</label>
+                    <input type="text" id="endereco" th:field="*{endereco}" maxlength="255">
+                </div>
+
+                <div class="campo col-4">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" th:field="*{cidade}" maxlength="100">
+                </div>
+
+                <div class="campo col-2">
+                    <label for="uf">UF</label>
+                    <input type="text" id="uf" th:field="*{uf}" maxlength="2" placeholder="SP"
+                           style="text-transform:uppercase;">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Observações</legend>
+            <div class="form-grid">
+                <div class="campo">
+                    <label for="observacoes">Anotações internas</label>
+                    <textarea id="observacoes" th:field="*{observacoes}" rows="3" maxlength="1000"
+                              placeholder="Contrato, horário de atendimento, particularidades do ambiente..."></textarea>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-rodape">
+            <a th:href="${cliente.id} == null ? @{/clientes} : @{/clientes/{id}(id=${cliente.id})}" class="btn">Cancelar</a>
+            <button type="submit" class="btn btn-primario">Salvar cliente</button>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>
