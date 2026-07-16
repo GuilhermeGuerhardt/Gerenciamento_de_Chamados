@@ -28,6 +28,14 @@ USER app
 
 EXPOSE 8090
 
+# Esta imagem so existe para ser implantada, entao o padrao dela e producao.
+# Sem isto, um servico criado sem SPRING_PROFILES_ACTIVE ignora as variaveis do
+# banco e tenta subir com o H2 local, que nem consegue gravar em disco aqui —
+# o erro que aparece e "Unable to determine Dialect", que nao diz nada sobre a
+# causa real. O render.yaml tambem define a variavel; esta e a rede de seguranca
+# para quando o servico for criado na mao, sem o Blueprint.
+ENV SPRING_PROFILES_ACTIVE=prod
+
 # MaxRAMPercentage faz a JVM respeitar o limite de memoria do container
 # (no free tier do Render sao 512 MB) em vez de assumir a RAM da maquina toda.
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC"
