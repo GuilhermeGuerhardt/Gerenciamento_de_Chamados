@@ -1,0 +1,37 @@
+# Infraestrutura como codigo do Render.
+# No painel: New > Blueprint > aponte para este repositorio.
+# As variaveis com "sync: false" NAO ficam no repositorio: o Render pergunta
+# o valor no primeiro deploy e guarda criptografado.
+
+services:
+  - type: web
+    name: gerenciamento-chamados
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /login
+
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # ---- Supabase (peguem em: Project Settings > Database > Connection string > JDBC) ----
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USER
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+
+      # ---- Administrador criado no primeiro start ----
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_SENHA
+        sync: false
+      - key: ADMIN_NOME
+        value: Administrador
+
+      # Sem dados de demonstracao no banco de producao.
+      - key: DADOS_EXEMPLO
+        value: "false"

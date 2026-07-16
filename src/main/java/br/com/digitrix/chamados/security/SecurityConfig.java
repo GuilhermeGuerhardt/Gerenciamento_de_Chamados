@@ -39,6 +39,11 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll()
                 .requestMatchers("/login", "/erro/**").permitAll()
 
+                // O navegador busca o manifest e o service worker sem os cookies de
+                // sessao. Se caissem no redirect de login, a opcao de instalar como
+                // aplicativo de desktop nao apareceria.
+                .requestMatchers("/manifest.webmanifest", "/sw.js").permitAll()
+
                 // Cadastro de clientes, contatos e usuarios e area administrativa.
                 .requestMatchers("/clientes/**").hasAnyRole("ADMIN", "TECNICO")
                 .requestMatchers("/usuarios/**").hasRole("ADMIN")

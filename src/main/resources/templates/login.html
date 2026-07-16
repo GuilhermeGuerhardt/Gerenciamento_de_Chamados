@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entrar - Gerenciamento de Chamados</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}">
+
+    <!-- Esta tela nao usa o layout comum, mas e a porta de entrada do sistema:
+         sem o manifest aqui, quem abre o app pela primeira vez (e cai no login)
+         nunca veria a opcao de instalar como aplicativo. -->
+    <link rel="manifest" th:href="@{/manifest.webmanifest}">
+    <link rel="icon" type="image/png" sizes="192x192" th:href="@{/img/icone-192.png}">
+    <link rel="apple-touch-icon" th:href="@{/img/icone-192.png}">
+    <meta name="theme-color" content="#1e5eff">
+    <script th:src="@{/js/pwa.js}" defer></script>
 </head>
 <body>
 
