@@ -8,7 +8,10 @@ services:
     name: gerenciamento-chamados
     runtime: docker
     plan: free
-    region: oregon
+    # O banco esta no Supabase em sa-east-1 (Sao Paulo) e o plano gratuito do
+    # Render nao tem regiao na America do Sul. Virginia e a mais proxima
+    # (~120ms contra ~180ms de Oregon), e essa distancia pesa a cada consulta.
+    region: virginia
     branch: main
     healthCheckPath: /login
 

@@ -112,10 +112,19 @@ O projeto já vem com `Dockerfile` e `render.yaml`.
 
 ### 1. Supabase (banco)
 
-Crie um projeto em [supabase.com](https://supabase.com). Em
-**Project Settings > Database > Connection string**, copie os dados da conexão.
-Use o **Connection pooler** (e não a conexão direta) — o Render abre e fecha
-conexões com frequência.
+Projeto: **gerenciamento-chamados** (`hiakuwkqthqwrwdrdzpp`), região `sa-east-1`,
+PostgreSQL 17.
+
+Em **Project Settings > Database > Connection string**, escolha a aba **JDBC** e a
+opção **Session pooler**.
+
+> **Session pooler, não Transaction pooler.** O modo *transaction* (porta 6543) não
+> suporta prepared statements, que o Hibernate usa o tempo todo — a aplicação
+> quebraria em tempo de execução. O modo *session* (porta 5432 do pooler) é
+> compatível e é o certo para um pool do HikariCP como o desta aplicação.
+>
+> Também não use a conexão direta (`db.<ref>.supabase.co`): ela tem poucas
+> conexões disponíveis e o Render as recicla com frequência.
 
 ### 2. Render (aplicação)
 
