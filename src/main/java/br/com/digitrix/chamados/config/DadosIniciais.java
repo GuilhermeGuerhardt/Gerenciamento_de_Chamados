@@ -84,15 +84,15 @@ public class DadosIniciais implements CommandLineRunner {
         log.warn("=================================================================");
     }
 
+    /**
+     * Cria apenas um cliente de demonstracao com contatos e um chamado, para o
+     * sistema nao abrir com as telas vazias.
+     *
+     * Tecnicos NAO sao criados aqui: eles sao cadastrados pelo administrador em
+     * "Usuarios e tecnicos", que e onde a senha de cada um e definida. Um tecnico
+     * gerado automaticamente teria senha conhecida e viraria uma porta aberta.
+     */
     private void criarExemplos() {
-        Usuario tecnico = new Usuario();
-        tecnico.setNome("Tecnico Exemplo");
-        tecnico.setEmail("tecnico@digitrix.com.br");
-        tecnico.setSenha(passwordEncoder.encode("tecnico123"));
-        tecnico.setPerfil(Perfil.TECNICO);
-        tecnico.setEspecialidade("Suporte geral");
-        usuarioRepository.save(tecnico);
-
         Cliente cliente = new Cliente();
         cliente.setRazaoSocial("Empresa Exemplo Ltda");
         cliente.setNomeFantasia("Empresa Exemplo");
@@ -132,7 +132,7 @@ public class DadosIniciais implements CommandLineRunner {
         chamadoRepository.save(chamado);
 
         log.info("Dados de exemplo criados (cliente, contatos e 1 chamado).");
-        log.info("Tecnico de teste -> login: tecnico@digitrix.com.br / senha: tecnico123");
+        log.info("Cadastre os tecnicos em 'Usuarios e tecnicos', entrando como administrador.");
         log.info("Para nao criar exemplos, defina app.dados-exemplo=false no application.properties");
     }
 }

@@ -46,16 +46,28 @@ Acesse: **http://localhost:8090**
 
 ### Acesso inicial
 
-| Perfil | Login | Senha |
-|---|---|---|
-| Administrador | `admin@digitrix.com.br` | `admin123` |
-| Técnico (exemplo) | `tecnico@digitrix.com.br` | `tecnico123` |
+No primeiro start o sistema cria **um único usuário**, o administrador global:
 
-> **Troque a senha do administrador no primeiro acesso** (menu *Meu perfil*).
-> As credenciais padrão ficam definidas em `src/main/resources/application.properties`.
+| Login | Senha |
+|---|---|
+| `admin@suaempresa.com.br` | `admin123` |
 
-Para não criar os dados de exemplo (cliente, contatos e chamado de demonstração),
-defina no `application.properties`:
+> **Troque a senha no primeiro acesso** (menu *Meu perfil*). Esses valores são o
+> padrão de desenvolvimento, definidos em `application.properties`, e podem ser
+> alterados pelas variáveis `ADMIN_EMAIL` e `ADMIN_SENHA`.
+>
+> Em produção não existe padrão: sem essas duas variáveis a aplicação se recusa
+> a subir, justamente para nunca ir ao ar com a senha publicada aqui.
+
+**Os técnicos são cadastrados por você**, entrando como administrador e indo em
+**Usuários e técnicos → Novo usuário**, com perfil *Técnico*. É lá que a senha de
+cada um é definida. O sistema não cria técnicos sozinho: um usuário gerado
+automaticamente teria senha conhecida e seria uma porta aberta.
+
+O mesmo vale para os solicitantes dos clientes — mesma tela, perfil *Solicitante*,
+vinculados à empresa deles.
+
+Para não criar o cliente e o chamado de demonstração:
 
 ```properties
 app.dados-exemplo=false
