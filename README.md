@@ -50,7 +50,7 @@ No primeiro start o sistema cria **um único usuário**, o administrador global:
 
 | Login | Senha |
 |---|---|
-| `admin@suaempresa.com.br` | `admin123` |
+| `admin@suaempresa.com.br` | `admin231@@` |
 
 > **Troque a senha no primeiro acesso** (menu *Meu perfil*). Esses valores são o
 > padrão de desenvolvimento, definidos em `application.properties`, e podem ser
@@ -84,7 +84,7 @@ app.dados-exemplo=false
 ## Estrutura
 
 ```
-src/main/java/br/com/digitrix/chamados/
+src/main/java/br/com/chamados/
 ├── model/        Entidades JPA (Cliente, Contato, Usuario, Chamado, Comentario, Historico)
 ├── repository/   Consultas via Spring Data
 ├── service/      Regras de negócio (abertura, atribuição, status, histórico)

@@ -1,7 +1,7 @@
 {
   "name": "Gerenciamento de Chamados",
   "short_name": "Chamados",
-  "description": "Sistema de chamados de suporte da Digitrix IT",
+  "description": "Sistema de gerenciamento de chamados de suporte",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

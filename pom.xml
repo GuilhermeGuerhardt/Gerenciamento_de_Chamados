@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>br.com.digitrix</groupId>
+    <groupId>br.com.chamados</groupId>
     <artifactId>gerenciamento-chamados</artifactId>
     <version>1.0.0</version>
     <name>Gerenciamento de Chamados</name>
