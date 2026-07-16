@@ -131,16 +131,25 @@ opção **Session pooler**.
 No painel: **New > Blueprint**, aponte para este repositório. O `render.yaml`
 configura o resto. O Render vai pedir as variáveis marcadas como secretas:
 
-| Variável | Exemplo / observação |
+| Variável | Valor |
 |---|---|
-| `DATABASE_URL` | `jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require` |
-| `DATABASE_USER` | `postgres.abcdefgh` (o Supabase inclui o ID do projeto) |
-| `DATABASE_PASSWORD` | a senha do banco definida na criação do projeto |
+| `DATABASE_URL` | `jdbc:postgresql://aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require` |
+| `DATABASE_USER` | `postgres.hiakuwkqthqwrwdrdzpp` |
+| `DATABASE_PASSWORD` | a senha do banco (painel do Supabase → Database) |
 | `ADMIN_EMAIL` | seu e-mail de administrador |
 | `ADMIN_SENHA` | **use uma senha forte** — não a padrão de desenvolvimento |
 
-A `DATABASE_URL` precisa do prefixo `jdbc:` e de `?sslmode=require`. O Supabase
-mostra a URL no formato `postgresql://...`; adicione o `jdbc:` na frente.
+Três detalhes que costumam derrubar o primeiro deploy:
+
+- O Supabase mostra a URL como `postgresql://...`. O JDBC precisa do prefixo:
+  vira `jdbc:postgresql://...`.
+- O `?sslmode=require` no fim é obrigatório — o Supabase recusa conexão sem TLS.
+- O host é `aws-1`, e não `aws-0` como aparece na maioria dos exemplos na
+  internet. Confira sempre no painel do seu projeto.
+
+O usuário **não** é apenas `postgres`: o pooler exige `postgres.<ref-do-projeto>`,
+e a senha vai separada, fora da URL (o Spring a injeta pelo
+`spring.datasource.password`).
 
 ### Limitações do plano gratuito
 
