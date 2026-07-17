@@ -32,11 +32,15 @@ O `JAVA_HOME` e o PATH do usuário já apontam para eles.
 
 ## Como rodar
 
-Na pasta do projeto:
+Na pasta do projeto (o wrapper baixa o Maven certo sozinho — **não precisa
+ter o Maven instalado**):
 
 ```powershell
-mvn spring-boot:run
+.\mvnw spring-boot:run
 ```
+
+> Em Linux/macOS: `./mvnw spring-boot:run`. Se já tiver o Maven instalado,
+> `mvn spring-boot:run` também funciona.
 
 Acesse: **http://localhost:8090**
 
