@@ -2,6 +2,7 @@ package br.com.chamados.repository;
 
 import br.com.chamados.model.Chamado;
 import br.com.chamados.model.StatusChamado;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -16,10 +17,16 @@ public interface ChamadoRepository extends JpaRepository<Chamado, Long>, JpaSpec
 
     Optional<Chamado> findByProtocolo(String protocolo);
 
+    // As listas do painel exibem cliente e tecnico de cada chamado; o EntityGraph
+    // traz as duas associacoes junto, numa consulta so, evitando o N+1 por linha.
+
+    @EntityGraph(attributePaths = {"cliente", "tecnico"})
     List<Chamado> findTop10ByOrderByAbertoEmDesc();
 
+    @EntityGraph(attributePaths = {"cliente", "tecnico"})
     List<Chamado> findTop10ByTecnicoIdAndStatusInOrderByAbertoEmDesc(Long tecnicoId, Collection<StatusChamado> status);
 
+    @EntityGraph(attributePaths = {"cliente", "tecnico"})
     List<Chamado> findTop10ByClienteIdOrderByAbertoEmDesc(Long clienteId);
 
     long countByStatus(StatusChamado status);

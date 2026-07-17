@@ -31,7 +31,7 @@ public class ChamadoService {
      */
     @Transactional(readOnly = true)
     public List<Chamado> listar(ChamadoFiltro filtro, Usuario usuarioLogado) {
-        Specification<Chamado> spec = ChamadoSpecs.comFiltro(filtro);
+        Specification<Chamado> spec = ChamadoSpecs.comAssociacoes().and(ChamadoSpecs.comFiltro(filtro));
 
         if (!usuarioLogado.isEquipeInterna()) {
             Long clienteId = usuarioLogado.getCliente() != null ? usuarioLogado.getCliente().getId() : -1L;

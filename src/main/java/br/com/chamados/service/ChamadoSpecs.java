@@ -2,6 +2,7 @@ package br.com.chamados.service;
 
 import br.com.chamados.model.Chamado;
 import br.com.chamados.model.StatusChamado;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -59,5 +60,25 @@ public final class ChamadoSpecs {
     /** Restringe a visao do solicitante aos chamados da propria empresa. */
     public static Specification<Chamado> doCliente(Long clienteId) {
         return (root, query, cb) -> cb.equal(root.get("cliente").get("id"), clienteId);
+    }
+
+    /**
+     * Traz cliente, contato e tecnico na mesma consulta da listagem.
+     * Sem isto, a tela lia cada associacao lazy por linha (problema N+1): uma
+     * lista de 50 chamados disparava dezenas de consultas extras — cada uma uma
+     * ida e volta ao banco. Sao todas associacoes *-para-um, entao o join nao
+     * multiplica linhas.
+     *
+     * O fetch e pulado em consultas de contagem (count), onde o join atrapalha.
+     */
+    public static Specification<Chamado> comAssociacoes() {
+        return (root, query, cb) -> {
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("cliente", JoinType.LEFT);
+                root.fetch("contato", JoinType.LEFT);
+                root.fetch("tecnico", JoinType.LEFT);
+            }
+            return cb.conjunction();
+        };
     }
 }
