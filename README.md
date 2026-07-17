@@ -98,26 +98,6 @@ src/main/resources/
 └── application.properties
 ```
 
-## Usar como aplicativo de desktop (PWA)
-
-O sistema é instalável: é a **mesma aplicação web**, mas abrindo em janela própria,
-com ícone na área de trabalho e no menu Iniciar — sem barra de endereço.
-
-No Edge ou Chrome, acesse o sistema e clique no ícone de instalar na barra de
-endereço (ou menu **⋯ > Aplicativos > Instalar este site como um aplicativo**).
-
-Também ficam disponíveis atalhos de clique direito no ícone: *Abrir chamado* e
-*Meus chamados*.
-
-> Requer HTTPS (ou localhost). Funciona no Render; num acesso por IP interno sem
-> HTTPS, o sistema continua funcionando pelo navegador, apenas sem a opção de instalar.
-
-**Por que não um programa nativo?** Um desktop em JavaFX conectando direto no
-Postgres exigiria a senha do banco em cada máquina — e quem a extraísse leria e
-escreveria o banco inteiro, furando todas as permissões por perfil e empresa.
-Fazer certo exigiria uma API REST e um segundo cliente para manter. O PWA entrega
-a experiência de aplicativo sem nenhum desses custos.
-
 ## Deploy no Render + Supabase
 
 O projeto já vem com `Dockerfile` e `render.yaml`.
